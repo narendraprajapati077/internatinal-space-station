@@ -1,0 +1,116 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #map {
+            margin: 10px;
+            padding: 10px;
+            height: 300px;
+            width: 65%;
+            border: solid;
+            border-radius: 5px;
+            border-color:#7bb4ff84;
+        }
+        .flex{
+            display:flex;
+            flex-direction: row;        
+        }
+        .table{
+            margin: 10px;
+            background-color: #7bb4ff84;
+            padding: 10px;
+            width: 30%;
+            border: solid;
+            border-radius: 5px;
+            border-color:  #7bb4ff84;
+        }
+             
+
+    </style>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+    crossorigin=""/>
+
+ <script
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+    crossorigin="">
+</script>
+<title>fetch data from API and map</title>
+</head>
+<body>
+    <h1>Where is ISS</h1>
+    <div class="flex">
+            <div id="map"></div>
+            <table class="table">
+                <tr>
+                    <th>INFORMATION</th>
+                </tr>
+                <tr>
+                    <td><strong>Latitude</strong></td>
+                    <td id="lat">-11.537404062489</td>
+                </tr>
+                <tr>
+                    <td><strong>Longitude</strong></td>
+                    <td id="lon">92.267334550738</td>
+                </tr>
+                <tr>
+                    <td><strong>Altitude</strong></td>
+                    <td><span id="alt">260.30</span>Km</td>
+                </tr>
+                <tr>
+                    <td><strong>Velocity</strong></td>
+                    <td><span id="vel">17,137.62</span> Kmph</td>
+                </tr>
+                <tr>
+                    <td><strong>Visibility</strong></td>
+                    <td><span id="vis">Daylight</span></td>
+                </tr>
+
+            </table> 
+    </div>  
+        <script>
+            const map = L.map('map').setView([0, 0], 1);
+            const myIcon = L.icon({
+                iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/International_Space_Station.svg/100px-International_Space_Station.svg.png',
+                iconSize: [45, 30],
+                iconAnchor: [25, 16],
+            });
+
+            const marker=L.marker([0, 0],{icon:myIcon}).addTo(map);
+
+            const attribution= '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+            const tileurl='https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+            const tiles= L.tileLayer(tileurl,{attribution});
+            tiles.addTo(map);
+            const api_url= "https://api.wheretheiss.at/v1/satellites/25544";
+            let firstload= true;
+            async function getISS(){
+                const reponse= await fetch(api_url);
+                const data = await reponse.json();
+                const{latitude,longitude,altitude,velocity,visibility}=data;
+                const date= new Date();
+
+                marker.setLatLng([latitude,longitude]);
+                if(firstload){
+                    map.setView([latitude,longitude],2);
+                    firstload=false;
+                }
+                document.getElementById('lat').textContent= latitude.toFixed(2);
+                document.getElementById('lon').textContent= longitude.toFixed(2);
+                document.getElementById('alt').textContent= altitude.toFixed(2);
+                document.getElementById('vel').textContent= velocity.toFixed(2);
+                document.getElementById('vis').textContent= visibility.toFixed(2);
+            }
+
+            getISS();
+
+            setInterval(getISS,1000);
+
+        </script>
+    
+</body>
+</html>
